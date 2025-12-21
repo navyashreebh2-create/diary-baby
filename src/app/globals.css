@@ -75,6 +75,103 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Custom animations for DiaryBaby */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* Animation classes */
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 15s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Improved scrollbar for diary entries */
+.diary-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.diary-scrollbar::-webkit-scrollbar-track {
+  background: rgba(245, 215, 224, 0.1);
+  border-radius: 3px;
+}
+
+.diary-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(245, 181, 200, 0.3);
+  border-radius: 3px;
+}
+
+.diary-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 181, 200, 0.5);
+}
+
+/* Focus styles for accessibility */
+.focus-visible:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
