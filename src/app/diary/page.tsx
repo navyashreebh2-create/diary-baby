@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Calendar from '@/components/Calendar';
 
 interface DiaryEntry {
   id: string;
@@ -18,6 +19,7 @@ export default function DiaryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -95,13 +97,48 @@ export default function DiaryPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const entryDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    const dayDiff = Math.floor((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    let datePrefix = '';
+    if (dayDiff === 0) {
+      datePrefix = 'Today';
+    } else if (dayDiff === 1) {
+      datePrefix = 'Yesterday';
+    } else if (dayDiff < 7) {
+      datePrefix = date.toLocaleDateString('en-US', { weekday: 'long' });
+    } else {
+      datePrefix = date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    const time = date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit'
     });
+
+    return `${datePrefix} at ${time}`;
   };
+
+  const filterEntriesByDate = (entries: DiaryEntry[], date: string | null) => {
+    if (!date) return entries;
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.createdAt);
+      const year = entryDate.getFullYear();
+      const month = String(entryDate.getMonth() + 1).padStart(2, '0');
+      const day = String(entryDate.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}` === date;
+    });
+  };
+
+  const filteredEntries = filterEntriesByDate(entries, selectedDate);
 
   const truncateContent = (content: string, maxLength: number = 50) => {
     if (content.length <= maxLength) return content;
@@ -150,39 +187,82 @@ export default function DiaryPage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 diary-scrollbar">
-            <h2 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
-              <span className="text-rose-400">📝</span>
-              Previous Entries
-            </h2>
+          <div className="flex-1 overflow-y-auto p-6 diary-scrollbar space-y-6">
+            {/* Calendar Section */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="text-rose-400">📅</span>
+                Calendar
+              </h2>
+              <Calendar
+                onDateSelect={setSelectedDate}
+                selectedDate={selectedDate}
+              />
+            </div>
 
-            {entries.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center">
-                  <span className="text-2xl">🌸</span>
-                </div>
-                <p className="text-gray-500 text-sm font-light">
-                  No entries yet. Start writing your first entry!
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {entries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="p-4 bg-gradient-to-r from-white/60 to-rose-50/40 rounded-2xl cursor-pointer hover:from-white/80 hover:to-rose-50/60 transition-all duration-300 hover:shadow-md hover:shadow-rose-200/50 border border-rose-100/30"
+            {/* Entries Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <span className="text-rose-400">📝</span>
+                  {selectedDate ? 'Entries' : 'Previous Entries'}
+                </h2>
+                {selectedDate && (
+                  <button
+                    onClick={() => setSelectedDate(null)}
+                    className="text-xs text-rose-600 hover:text-rose-700 hover:underline"
                   >
-                    <p className="text-sm text-gray-700 line-clamp-2 font-medium">
-                      {truncateContent(entry.content)}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                      <span>🕐</span>
-                      {formatDate(entry.createdAt)}
-                    </p>
-                  </div>
-                ))}
+                    Show All
+                  </button>
+                )}
               </div>
-            )}
+
+              {selectedDate && (
+                <div className="mb-3 p-3 bg-rose-50/70 rounded-xl border border-rose-200/50">
+                  <p className="text-sm text-gray-700">
+                    Showing entries for{' '}
+                    <span className="font-semibold text-rose-700">
+                      {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </p>
+                </div>
+              )}
+
+              {filteredEntries.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center">
+                    <span className="text-2xl">🌸</span>
+                  </div>
+                  <p className="text-gray-500 text-sm font-light">
+                    {selectedDate
+                      ? 'No entries on this date'
+                      : 'No entries yet. Start writing your first entry!'
+                    }
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="p-4 bg-gradient-to-r from-white/60 to-rose-50/40 rounded-2xl cursor-pointer hover:from-white/80 hover:to-rose-50/60 transition-all duration-300 hover:shadow-md hover:shadow-rose-200/50 border border-rose-100/30"
+                    >
+                      <p className="text-sm text-gray-700 line-clamp-2 font-medium">
+                        {truncateContent(entry.content)}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                        <span>🕐</span>
+                        {formatDate(entry.createdAt)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </aside>
 
