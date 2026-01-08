@@ -13,6 +13,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.0.0",
     "mongoose": "^9.0.2",
     "next": "^16.0.10",
     "openai": "^6.15.0",
