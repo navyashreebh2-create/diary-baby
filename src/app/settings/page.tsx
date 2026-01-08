@@ -58,23 +58,24 @@ export default function SettingsPage() {
   };
 
   const handleSaveApiKey = async () => {
-    if (!apiKey.trim() && !apiKey.startsWith('•')) {
+    // Check if trying to save empty key
+    if (!apiKey || apiKey.trim().length === 0) {
       setMessage('Please enter a valid API key');
+      return;
+    }
+
+    // Check if it's the masked value (user didn't change it)
+    if (apiKey.startsWith('•')) {
+      setMessage('No changes to save');
+      setTimeout(() => setMessage(''), 2000);
       return;
     }
 
     setIsSaving(true);
     try {
-      if (apiKey.startsWith('•')) {
-        localStorage.removeItem('openai_api_key');
-        setApiKey('');
-        setMessage('API key removed successfully');
-      } else {
-        localStorage.setItem('openai_api_key', apiKey.trim());
-        setApiKey('•'.repeat(16));
-        setMessage('API key saved successfully');
-      }
-
+      localStorage.setItem('openai_api_key', apiKey.trim());
+      setApiKey('•'.repeat(16));
+      setMessage('API key saved successfully');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       setMessage('Something went wrong. Please try again.');
@@ -192,7 +193,7 @@ export default function SettingsPage() {
                     onClick={() => setShowApiKey(!showApiKey)}
                     className="px-6 py-4 text-gray-600 hover:text-rose-600 border-2 border-gray-200 hover:border-rose-300 rounded-2xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    {showApiKey ? '👁️ Hide' : '👁️ Show'}
+                    {showApiKey ? '👁️ Hide' : '🙈 Show'}
                   </button>
                 </div>
               </div>

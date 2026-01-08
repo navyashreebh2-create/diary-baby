@@ -145,6 +145,13 @@ export default function DiaryPage() {
     return content.substring(0, maxLength) + '...';
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 animate-gradient-shift">
@@ -287,9 +294,10 @@ export default function DiaryPage() {
                     setCurrentEntry(e.target.value);
                     setError('');
                   }}
+                  onKeyDown={handleKeyDown}
                   className="w-full px-6 py-5 rounded-3xl border-2 border-rose-100/50 bg-white/60 backdrop-blur-sm focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 transition-all duration-300 resize-none shadow-lg shadow-rose-200/30 hover:shadow-xl hover:shadow-rose-300/40 focus:shadow-2xl focus:shadow-rose-400/50 font-light text-gray-700 placeholder-gray-400"
                   style={{ height: '200px' }}
-                  placeholder="How are you feeling today? What's on your mind? Take your time to write what's in your heart..."
+                  placeholder="How are you feeling today? What's on your mind? Take your time to write what's in your heart... (Press Enter to submit, Shift+Enter for new line)"
                   disabled={isSubmitting}
                 />
               </div>
